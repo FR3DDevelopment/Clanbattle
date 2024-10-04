@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="Favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="Favicon.png" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PS99 | Clan Battle!</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400;500&display=swap');
+
+        /* Reduce padding for the "Name" header */
+        th:nth-child(2) {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+
+        /* Adjust flex layout in "Name" column to prevent extra spacing */
+        .clan-name {
+            margin-left: 0.5rem;
+        }
+
+        /* Optional: Reduce padding between table cells */
+        td {
+            padding: 8px;
+        }
+    </style>
+</head>
+<body class="font-roboto bg-gradient-to-br from-gray-200 to-gray-100 text-gray-800">
+
+    <header class="bg-gray-800 text-white px-10 py-5 flex justify-between items-center shadow-lg">
+        <div class="logo">
+            <h1 class="text-2xl font-poppins font-bold">MEE69 - FR3D</h1>
+        </div>
+        <nav>
+            <ul class="flex gap-5">
+                <!-- Navigation links can be added here -->
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container max-w-3xl mx-auto mt-10 p-5 bg-white/30 rounded-xl shadow-lg backdrop-blur-sm border border-gray-300">
+            <div class="flex flex-col items-center text-center">
+                <h2 class="text-2xl font-poppins font-semibold text-gray-800">Catching Battle!</h2>
+                <p id="battleStart"></p>
+                <p id="battleFinish"></p>
+                <button class="reward-button bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md mt-4" onclick="openModal()">Placement Rewards</button>
+        
+                <div class="tabs flex items-center gap-4 flex-wrap mt-6">
+                    <button class="tab-button bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md active" onclick="showTab('clans')">Clans</button>
+                    <input type="text" id="searchInput" maxlength="4" class="px-4 py-3 border border-gray-300 rounded-lg shadow-inner focus:border-blue-600 focus:outline-none" placeholder="Search clan">
+                    <button class="search-button bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md" onclick="searchClan()">Search</button>
+                </div>
+
+                <div class="error-message text-red-500 mt-2" id="errorMessage"></div>
+                <table class="w-full border-collapse mt-5">
+                    <thead>
+                        <tr class="bg-blue-600 text-white font-semibold">
+                            <th class="px-4 py-2 w-1/6">Ranking</th>
+                            <th class="px-4 py-2 w-2/6 text-left">Name</th>
+                            <th class="px-4 py-2 w-1/6">Points</th>
+                            <th class="px-4 py-2 w-1/6">Members</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clanData">
+                        <!-- Clan data will be populated here -->
+                    </tbody>
+                </table>
+
+                <div id="players" class="tab-content hidden">
+                    <!-- Player data table can go here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="rewardsModal" class="modal hidden fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center">
+        <div class="modal-content bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto">
+            <span class="close text-gray-800 float-right text-2xl cursor-pointer hover:text-red-600" onclick="closeModal()">&times;</span>
+            <h3 class="text-3xl font-poppins font-bold text-blue-600 mb-6">Placement Rewards</h3>
+            <ul class="list-disc list-inside space-y-4 pl-5">
+                <li class="text-lg">Clan Gift - Top 500</li>
+                <li class="text-lg">Reversed Booth - Top 50</li>
+                <li class="text-lg">Reversed Hoverboard - Top 10</li>
+                <li class="text-lg">Huge Reversed Cat - Top 4 to 10</li>
+                <li class="text-lg">Golden Huge Reversed Cat - Top 2-3</li>
+                <li class="text-lg">Rainbow Huge Reversed Cat - Top 1</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        var apiUrl = 'https://biggamesapi.io/api/clans?page=1&pageSize=100&sort=Points&sortOrder=desc';
+        var allClans = [];
+        var searchPage = 1;
+
+        // Fetch clan data every 5 minutes
+        function fetchClanData() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', apiUrl, true);
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response && response.status === 'ok' && Array.isArray(response.data)) {
+                        allClans = response.data;
+                        displayClans(allClans);  // Display updated clans
+                    } else {
+                        console.error('Unexpected API response structure');
+                    }
+                } else {
+                    console.error('API request failed');
+                }
+            };
+
+            xhr.send();
+        }
+
+        // Automatically refresh clan data every 5 minutes
+        setInterval(fetchClanData, 300000); // 300000 milliseconds = 5 minutes
+
+        // Call it once on page load
+        fetchClanData();
+
+        function searchClan() {
+            var clanName = document.getElementById('searchInput').value.trim();
+
+            if (clanName.length === 0) {
+                displayClans(allClans); // If input is empty, show all clans
+                document.getElementById('errorMessage').innerText = '';
+                return;
+            }
+
+            if (clanName.length < 1 || clanName.length > 4) {
+                document.getElementById('errorMessage').innerText = 'Clan name must be between 1 and 4 characters.';
+                return;
+            }
+
+            searchPage = 1;
+            document.getElementById('errorMessage').innerText = '';
+
+            function fetchAndSearch() {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', `https://biggamesapi.io/api/clans?page=${searchPage}&pageSize=1000&sort=Points&sortOrder=desc`, true);
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response && response.status === 'ok' && Array.isArray(response.data)) {
+                            var clans = response.data;
+                            var found = false;
+
+                            for (var i = 0; i < clans.length; i++) {
+                                if (clans[i].Name.toLowerCase() === clanName.toLowerCase()) {
+                                    var rank = (searchPage - 1) * 1000 + i + 1;
+                                    displayClans([clans[i]], rank);
+                                    document.getElementById('errorMessage').innerText = '';
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found) {
+                                if (clans.length === 0) {
+                                    document.getElementById('errorMessage').innerText = 'Clan does not exist.';
+                                } else {
+                                    searchPage++;
+                                    fetchAndSearch();
+                                }
+                            }
+                        } else {
+                            console.error('Unexpected API response structure');
+                        }
+                    } else {
+                        console.error('API request failed');
+                    }
+                };
+
+                xhr.send();
+            }
+
+            fetchAndSearch();
+        }
+
+        function displayClans(clans, rankStart = 1) {
+    var clanData = document.getElementById('clanData');
+    clanData.innerHTML = '';
+    
+    clans.forEach(function(clan, index) {
+        var rank = rankStart + index;
+        var medalImage = '';
+
+        // Determine the medal image based on the rank
+        if (rank === 1) {
+            medalImage = '<img src="https://db.biggames.io/_next/image?url=%2Ficon_medal_gold.png&w=32&q=75" alt="Gold Medal" class="w-6 inline-block mr-2">';
+        } else if (rank >= 2 && rank <= 10) {
+            medalImage = '<img src="https://db.biggames.io/_next/image?url=%2Ficon_medal_emerald_old.png&w=32&q=75" alt="Silver Medal" class="w-6 inline-block mr-2">';
+        } else if (rank >= 11 && rank <= 50) {
+            medalImage = '<img src="https://db.biggames.io/_next/image?url=%2Ficon_medal_bronze.png&w=32&q=75" alt="Bronze Medal" class="w-6 inline-block mr-2">';
+        }
+
+        // Create the table row with the medal
+        var row = document.createElement('tr');
+        row.classList.add('border-b', 'hover:bg-blue-50');
+        row.innerHTML = `
+            <td class="px-4 py-2">${medalImage}${rank}</td>
+            <td class="px-4 py-2">
+                <div class="flex items-center">
+                    <a href="clan-info/?clan=${encodeURIComponent(clan.Name)}">
+                        <img src="${clan.Icon.replace('rbxassetid://', 'https://biggamesapi.io/image/')}" class="w-12 h-12 rounded-full inline-block mr-3" alt="Icon">
+                    </a>
+                    <span class="font-semibold clan-name">${clan.Name}</span>
+                </div>
+            </td>
+            <td class="px-4 py-2">${clan.Points.toLocaleString()}</td>
+            <td class="px-4 py-2">${clan.Members + 1}</td>
+        `;
+        clanData.appendChild(row);
+    });
+}
+
+
+
+        document.getElementById('searchInput').addEventListener('input', function() {
+            if (this.value.trim() === '') {
+                displayClans(allClans);
+                document.getElementById('errorMessage').innerText = '';
+            }
+        });
+
+        function openModal() {
+            document.getElementById('rewardsModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('rewardsModal').classList.add('hidden');
+        }
+    </script>
+    <script src="scripts.js"></script>
+</body>
+</html>
