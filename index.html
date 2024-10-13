@@ -93,7 +93,7 @@
     </div>
 
     <script>
-        var apiUrl = 'https://biggamesapi.io/api/clans?page=1&pageSize=100&sort=Points&sortOrder=desc';
+        var apiUrl = 'https://ps99.biggamesapi.io/api/clans?page=1&pageSize=100&sort=Points&sortOrder=desc';
         var allClans = [];
         var searchPage = 1;
 
@@ -144,7 +144,7 @@
 
             function fetchAndSearch() {
                 var xhr = new XMLHttpRequest();
-                xhr.open('GET', `https://biggamesapi.io/api/clans?page=${searchPage}&pageSize=1000&sort=Points&sortOrder=desc`, true);
+                xhr.open('GET', `https://ps99.biggamesapi.io/api/clans?page=${searchPage}&pageSize=1000&sort=Points&sortOrder=desc`, true);
 
                 xhr.onload = function() {
                     if (xhr.status === 200) {
@@ -210,7 +210,7 @@
             <td class="px-4 py-2">
                 <div class="flex items-center">
                     <a href="clan-info/?clan=${encodeURIComponent(clan.Name)}">
-                        <img src="${clan.Icon.replace('rbxassetid://', 'https://biggamesapi.io/image/')}" class="w-12 h-12 rounded-full inline-block mr-3" alt="Icon">
+                        <img src="${clan.Icon.replace('rbxassetid://', 'https://ps99.biggamesapi.io/image/')}" class="w-12 h-12 rounded-full inline-block mr-3" alt="Icon">
                     </a>
                     <span class="font-semibold clan-name">${clan.Name}</span>
                 </div>
