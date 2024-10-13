@@ -57,7 +57,7 @@
 
         if (clanName) {
             // Fetch clan data
-            fetch(`https://biggamesapi.io/api/clan/${clanName}`)
+            fetch(`https://ps99.biggamesapi.io/api/clan/${clanName}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log('API Data:', data); // Debugging: check the full response
@@ -71,7 +71,7 @@
                     // Process the icon URL if it's in the rbxassetid:// format
                     let clanIconUrl = clanData.Icon;
                     if (clanIconUrl && clanIconUrl.includes('rbxassetid://')) {
-                        clanIconUrl = clanIconUrl.replace('rbxassetid://', 'https://biggamesapi.io/image/');
+                        clanIconUrl = clanIconUrl.replace('rbxassetid://', 'https://ps99.biggamesapi.io/image/');
                     } else {
                         clanIconUrl = 'https://via.placeholder.com/80';
                     }
