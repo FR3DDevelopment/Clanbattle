@@ -1,105 +1,138 @@
-async function fetchClanPoints(clanId) {
-    try {
-        // Fetch points first
-        const pointsResponse = await fetch(`https://api.example.com/clan/${clanId}/points`);
-        if (!pointsResponse.ok) throw new Error('Failed to fetch points');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clan Points</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .user-row {
+            margin-bottom: 10px;
+        }
+        .user-row span {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Clan Points</h1>
+    <div id="clan-container"></div>
 
-        const pointsData = await pointsResponse.json();
-        displayPoints(pointsData); // Display points immediately
+    <script>
+        async function fetchClanPoints(clanId) {
+            try {
+                // Fetch points first
+                const pointsResponse = await fetch(`https://api.example.com/clan/${clanId}/points`);
+                if (!pointsResponse.ok) throw new Error('Failed to fetch points');
 
-        // Now, fetch display names and avatars separately
-        const userIds = pointsData.map(member => member.userId); // Collect all userIds
+                const pointsData = await pointsResponse.json();
+                displayPoints(pointsData); // Display points immediately
 
-        try {
-            const displayNamesData = await getUsernames(userIds);
-            if (displayNamesData.ok) {
-                updateUsernames(displayNamesData.ok, pointsData);
-            } else {
-                console.error(displayNamesData.error);
-                useDefaultUsernames(pointsData);
+                // Now, fetch display names and avatars separately
+                const userIds = pointsData.map(member => member.userId); // Collect all userIds
+
+                try {
+                    const displayNamesData = await getUsernames(userIds);
+                    if (displayNamesData.ok) {
+                        updateUsernames(displayNamesData.ok, pointsData);
+                    } else {
+                        console.error(displayNamesData.error);
+                        useDefaultUsernames(pointsData);
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch display names:", e);
+                    useDefaultUsernames(pointsData);
+                }
+
+            } catch (e) {
+                console.error("Failed to fetch points:", e);
+                // Handle failure to fetch points (optional)
             }
-        } catch (e) {
-            console.error("Failed to fetch display names:", e);
-            useDefaultUsernames(pointsData);
         }
 
-    } catch (e) {
-        console.error("Failed to fetch points:", e);
-        // Handle failure to fetch points (optional)
-    }
-}
+        async function getUsernames(userIds) {
+            const url = "https://users.roproxy.com/v1/users";
+            const body = {
+                userIds: userIds,
+                excludeBannedUsers: true
+            };
 
-async function getUsernames(userIds) {
-    const url = "https://users.roproxy.com/v1/users";
-    const body = {
-        userIds: userIds,
-        excludeBannedUsers: true
-    };
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
 
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-        });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    return { error: `HTTP error: ${response.status} - ${errorText}` };
+                }
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            return { error: `HTTP error: ${response.status} - ${errorText}` };
+                const data = await response.json();
+                return { ok: data.data };
+
+            } catch (e) {
+                console.error("Error fetching display names:", e);
+                return { error: 'Failed to fetch display names' };
+            }
         }
 
-        const data = await response.json();
-        return { ok: data.data };
+        function displayPoints(pointsData) {
+            const clanContainer = document.getElementById('clan-container');
+            clanContainer.innerHTML = ""; // Clear previous content
 
-    } catch (e) {
-        console.error("Error fetching display names:", e);
-        return { error: 'Failed to fetch display names' };
-    }
-}
+            pointsData.forEach(member => {
+                // Display points immediately
+                const userRow = `
+                    <div class="user-row">
+                        <span>User ID: ${member.userId}</span>
+                        <span>Points: ${member.points}</span>
+                    </div>
+                `;
+                clanContainer.innerHTML += userRow;
+            });
+        }
 
-function displayPoints(pointsData) {
-    pointsData.forEach(member => {
-        // Display points immediately
-        console.log(`User ID: ${member.userId}, Points: ${member.points}`);
-        // Here, you can render this data in your HTML
-        const userRow = `
-            <div>
-                <span>User ID: ${member.userId}</span> 
-                <span>Points: ${member.points}</span>
-            </div>
-        `;
-        document.body.innerHTML += userRow;
-    });
-}
+        function useDefaultUsernames(pointsData) {
+            const clanContainer = document.getElementById('clan-container');
 
-function useDefaultUsernames(pointsData) {
-    pointsData.forEach(member => {
-        console.log(`User ID: ${member.userId}, Display Name: Default`);
-        // Render default display names in your HTML
-        const userRow = `
-            <div>
-                <span>User ID: ${member.userId}</span> 
-                <span>Display Name: Default</span>
-                <span>Points: ${member.points}</span>
-            </div>
-        `;
-        document.body.innerHTML += userRow;
-    });
-}
+            pointsData.forEach(member => {
+                // Display default usernames if display name fetch fails
+                const userRow = `
+                    <div class="user-row">
+                        <span>User ID: ${member.userId}</span>
+                        <span>Display Name: Default</span>
+                        <span>Points: ${member.points}</span>
+                    </div>
+                `;
+                clanContainer.innerHTML += userRow;
+            });
+        }
 
-function updateUsernames(usernamesData, pointsData) {
-    usernamesData.forEach((user, index) => {
-        const pointsInfo = pointsData[index];
-        console.log(`User ID: ${user.id}, Display Name: ${user.displayName}, Points: ${pointsInfo.points}`);
-        // Render display names and points in your HTML
-        const userRow = `
-            <div>
-                <span>Display Name: ${user.displayName}</span>
-                <span>Points: ${pointsInfo.points}</span>
-            </div>
-        `;
-        document.body.innerHTML += userRow;
-    });
-}
+        function updateUsernames(usernamesData, pointsData) {
+            const clanContainer = document.getElementById('clan-container');
+
+            usernamesData.forEach((user, index) => {
+                const pointsInfo = pointsData[index];
+
+                const userRow = `
+                    <div class="user-row">
+                        <span>Display Name: ${user.displayName}</span>
+                        <span>Points: ${pointsInfo.points}</span>
+                    </div>
+                `;
+                clanContainer.innerHTML += userRow;
+            });
+        }
+
+        // Call the function with the appropriate clan ID
+        fetchClanPoints('your-clan-id-here');
+    </script>
+</body>
+</html>
