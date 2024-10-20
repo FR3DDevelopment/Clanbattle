@@ -1,211 +1,105 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="Favicon.png" type="image/x-icon">
-    <link rel="shortcut icon" href="Favicon.png" type="image/x-icon">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clan Leaderboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 text-gray-900">
-    <div class="container mx-auto px-4 py-6">
-        <h1 id="page-title" class="text-3xl font-bold text-center mb-6">Clan Leaderboard</h1>
-        <p id="error-message" class="text-red-600 text-center mb-4"></p>
+async function fetchClanPoints(clanId) {
+    try {
+        // Fetch points first
+        const pointsResponse = await fetch(`https://api.example.com/clan/${clanId}/points`);
+        if (!pointsResponse.ok) throw new Error('Failed to fetch points');
 
-        <!-- Clan Info Section -->
-        <div id="clan-info" class="bg-white p-6 rounded-lg shadow-md mb-6">
-            <div class="flex items-center space-x-4">
-                <img id="clan-icon" src="" alt="Clan Icon" class="w-20 h-20 rounded-full">
-                <div>
-                    <h2 id="clan-name" class="text-2xl font-bold">🏰 Clan: </h2>
-                    <p id="clan-desc" class="text-gray-700">gg/KOR1</p>
-                    <p id="clan-status" class="text-blue-600 font-bold">📢 Join a clan: </p>
-                </div>
+        const pointsData = await pointsResponse.json();
+        displayPoints(pointsData); // Display points immediately
+
+        // Now, fetch display names and avatars separately
+        const userIds = pointsData.map(member => member.userId); // Collect all userIds
+
+        try {
+            const displayNamesData = await getUsernames(userIds);
+            if (displayNamesData.ok) {
+                updateUsernames(displayNamesData.ok, pointsData);
+            } else {
+                console.error(displayNamesData.error);
+                useDefaultUsernames(pointsData);
+            }
+        } catch (e) {
+            console.error("Failed to fetch display names:", e);
+            useDefaultUsernames(pointsData);
+        }
+
+    } catch (e) {
+        console.error("Failed to fetch points:", e);
+        // Handle failure to fetch points (optional)
+    }
+}
+
+async function getUsernames(userIds) {
+    const url = "https://users.roproxy.com/v1/users";
+    const body = {
+        userIds: userIds,
+        excludeBannedUsers: true
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            return { error: `HTTP error: ${response.status} - ${errorText}` };
+        }
+
+        const data = await response.json();
+        return { ok: data.data };
+
+    } catch (e) {
+        console.error("Error fetching display names:", e);
+        return { error: 'Failed to fetch display names' };
+    }
+}
+
+function displayPoints(pointsData) {
+    pointsData.forEach(member => {
+        // Display points immediately
+        console.log(`User ID: ${member.userId}, Points: ${member.points}`);
+        // Here, you can render this data in your HTML
+        const userRow = `
+            <div>
+                <span>User ID: ${member.userId}</span> 
+                <span>Points: ${member.points}</span>
             </div>
-        </div>
+        `;
+        document.body.innerHTML += userRow;
+    });
+}
 
-        <!-- Leaderboard Table -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-                <thead class="bg-blue-600">
-                    <tr>
-                        <th class="py-3 px-4 border-b border-gray-300 text-left text-white">#</th>
-                        <th class="py-3 px-4 border-b border-gray-300 text-left text-white">Avatar</th>
-                        <th class="py-3 px-4 border-b border-gray-300 text-left text-white">Display Name</th>
-                        <th class="py-3 px-4 border-b border-gray-300 text-left text-white">Points</th>
-                    </tr>
-                </thead>
-                
-                <tbody id="leaderboard-body">
-                    <!-- Leaderboard data will be inserted here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
+function useDefaultUsernames(pointsData) {
+    pointsData.forEach(member => {
+        console.log(`User ID: ${member.userId}, Display Name: Default`);
+        // Render default display names in your HTML
+        const userRow = `
+            <div>
+                <span>User ID: ${member.userId}</span> 
+                <span>Display Name: Default</span>
+                <span>Points: ${member.points}</span>
+            </div>
+        `;
+        document.body.innerHTML += userRow;
+    });
+}
 
-    <script>
-        // Helper function to get query parameter value by name
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
-        }
-
-        // Get the clan name and battle ID from the query parameters
-        const clanName = getQueryParam('clan');
-        const battleID = getQueryParam('battle') || 'HalloweenBattle'; // Default to 'CrabBattle' if not provided
-
-        if (clanName) {
-            // Fetch clan data
-            fetch(`https://ps99.biggamesapi.io/api/clan/${clanName}`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log('API Data:', data); // Debugging: check the full response
-                    
-                    // Clan info
-                    const clanData = data.data;
-                    const clanNameText = clanData.Name || 'Unknown Clan';
-                    const clanDesc = clanData.Desc || 'No description available';
-                    const clanStatus = clanData.Status || 'No status';
-
-                    // Process the icon URL if it's in the rbxassetid:// format
-                    let clanIconUrl = clanData.Icon;
-                    if (clanIconUrl && clanIconUrl.includes('rbxassetid://')) {
-                        clanIconUrl = clanIconUrl.replace('rbxassetid://', 'https://ps99.biggamesapi.io/image/');
-                    } else {
-                        clanIconUrl = 'https://via.placeholder.com/80';
-                    }
-
-                    // Update the clan info section
-                    document.getElementById('clan-name').textContent = `🏰 Clan: ${clanNameText}`;
-                    document.getElementById('clan-desc').textContent = ` ${clanDesc}`;
-                    document.getElementById('clan-status').innerHTML = `📢 ${clanStatus}`;
-                    document.getElementById('clan-icon').src = clanIconUrl;
-
-                    // Update the page title and heading with the clan name
-                    document.title = `PS99 | Clan Battle - ${clanNameText}`;
-                    document.getElementById('page-title').textContent = `Clan - ${clanNameText}`;
-
-                    // Access the 'Battles' object and check if the battle data exists
-                    const battles = clanData.Battles;
-                    const battleData = battles[battleID];
-
-                    if (battleData && battleData.PointContributions) {
-                        const leaderboard = battleData.PointContributions;
-                        const userIds = leaderboard.map(member => member.UserID);
-
-                        // Fetch avatars and display names using Roproxy
-                        Promise.all([fetchAvatars(userIds), getUsernames(userIds)])
-                            .then(([avatarResponse, usernameResponse]) => {
-                                if (avatarResponse.ok && usernameResponse.ok) {
-                                    const avatars = avatarResponse.ok;
-                                    const usernames = usernameResponse.ok;
-
-                                    // Sort the users by points in descending order
-                                    leaderboard.sort((a, b) => b.Points - a.Points);
-
-                                    // Create leaderboard HTML
-                                    let leaderboardHtml = '';
-                                    leaderboard.forEach((member, index) => {
-                                        // Find DisplayName and Avatar
-                                        const displayName = usernames.find(u => u.id == member.UserID)?.displayName || 'Unknown';
-                                        const avatarUrl = avatars.find(a => a.targetId == member.UserID)?.imageUrl || 'https://via.placeholder.com/40';
-                                        const fallbackUrl = 'https://via.placeholder.com/40';
-
-                                        leaderboardHtml += `
-                                            <tr>
-                                                <td class="py-2 px-4 border-b border-gray-300 font-bold">${index + 1}</td>
-                                                <td class="py-2 px-4 border-b border-gray-300">
-                                                    <img src="${avatarUrl}" alt="Avatar" class="w-10 h-10 rounded-full" onError="this.onerror=null;this.src='${fallbackUrl}';">
-                                                </td>
-                                                <td class="py-2 px-4 border-b border-gray-300 font-bold">${displayName}</td>
-                                                <td class="py-2 px-4 border-b border-gray-300 font-bold">${member.Points}</td>
-                                            </tr>
-                                        `;
-                                    });
-
-                                    // Insert the leaderboard into the table body
-                                    document.getElementById('leaderboard-body').innerHTML = leaderboardHtml;
-                                } else {
-                                    document.getElementById('error-message').textContent = 'Error fetching avatars or display names.';
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error fetching data:', error);
-                                document.getElementById('error-message').textContent = 'Error fetching data.';
-                            });
-                    } else {
-                        document.getElementById('error-message').textContent = 'No data available for this battle.';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                    document.getElementById('error-message').textContent = 'Error fetching data.';
-                });
-        } else {
-            document.getElementById('error-message').textContent = 'No clan name provided in the URL.';
-        }
-
-        // Fetch avatars using the roproxy.com API
-        async function fetchAvatars(userIds) {
-            const url = `https://thumbnails.roproxy.com/v1/users/avatar-headshot?userIds=${userIds.join(',')}&size=75x75&format=Png&isCircular=true`;
-            
-            try {
-                const response = await fetch(url, {
-                    method: 'GET',
-                });
-
-                if (!response.ok) {
-                    if (response.status === 429) { // Too many requests
-                        return { error: 'rate_limited' };
-                    } else {
-                        const errorText = await response.text();
-                        return { error: `HTTP error: ${response.status} - ${errorText}` };
-                    }
-                }
-
-                const data = await response.json();
-                return { ok: data.data };
-            } catch (e) {
-                console.error("Error fetching avatars:", e);
-                return { error: 'http_error' };
-            }
-        }
-
-        // Fetch display names using the roproxy.com API
-        async function getUsernames(userIds) {
-            const url = "https://users.roproxy.com/v1/users";
-            const body = {
-                userIds: userIds,
-                excludeBannedUsers: true
-            };
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(body)
-                });
-
-                if (!response.ok) {
-                    if (response.status === 429) { // Too many requests
-                        return { error: 'rate_limited' };
-                    } else {
-                        const errorText = await response.text();
-                        return { error: `HTTP error: ${response.status} - ${errorText}` };
-                    }
-                }
-
-                const data = await response.json();
-                return { ok: data.data };
-            } catch (e) {
-                console.error("Error fetching display names:", e);
-                return { error: 'http_error' };
-            }
-        }
-    </script>
-    
-</body>
-</html>
+function updateUsernames(usernamesData, pointsData) {
+    usernamesData.forEach((user, index) => {
+        const pointsInfo = pointsData[index];
+        console.log(`User ID: ${user.id}, Display Name: ${user.displayName}, Points: ${pointsInfo.points}`);
+        // Render display names and points in your HTML
+        const userRow = `
+            <div>
+                <span>Display Name: ${user.displayName}</span>
+                <span>Points: ${pointsInfo.points}</span>
+            </div>
+        `;
+        document.body.innerHTML += userRow;
+    });
+}
