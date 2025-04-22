@@ -2,137 +2,399 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="Favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="Favicon.png" type="image/x-icon">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clan Points</title>
+    <title>Clan Leaderboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        theme: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb', /* Base theme color rgb(37 99 235) */
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'elevated': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
+            font-family: 'Inter', sans-serif;
         }
-        .user-row {
-            margin-bottom: 10px;
+        .glass-effect {
+            background: rgba(13, 21, 45, 0.85);
+            backdrop-filter: blur(8px);
         }
-        .user-row span {
-            margin-right: 10px;
+        .search-highlight {
+            background-color: rgba(59, 130, 246, 0.3);
+            border-radius: 4px;
+        }
+        .ranking-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            font-weight: 600;
         }
     </style>
 </head>
-<body>
-    <h1>Clan Points</h1>
-    <div id="clan-container"></div>
+<body class="bg-gradient-to-br from-slate-800 via-theme-800 to-slate-800 text-gray-200 min-h-screen">
+    <div class="container mx-auto px-4 py-12 max-w-5xl">
+        <!-- Header with logo -->
+        <div class="relative mb-10">
+            <div class="absolute top-0 left-0 w-24 h-24 bg-theme-500 rounded-full opacity-20 blur-2xl"></div>
+            <div class="absolute top-10 right-10 w-32 h-32 bg-theme-400 rounded-full opacity-10 blur-2xl"></div>
+            
+            <div class="text-center relative z-10">
+                <h1 id="page-title" class="text-5xl font-bold text-white mb-4">Clan Leaderboard</h1>
+                <div class="w-32 h-1 bg-theme-500 mx-auto rounded-full mb-6"></div>
+                <p class="text-theme-200 font-medium">Real-time clan battle statistics</p>
+            </div>
+            
+            <div id="error-message" class="mt-6 text-red-600 text-center mb-4 font-medium bg-red-50 py-3 px-4 rounded-lg shadow-md max-w-lg mx-auto hidden"></div>
+        </div>
+
+        <!-- Main Content Wrapper -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Clan Info Card -->
+            <div id="clan-info" class="glass-effect rounded-2xl shadow-elevated lg:col-span-1 border border-theme-400/20 overflow-hidden">
+                <div class="bg-theme-600 py-4 px-6">
+                    <h2 class="text-white font-bold text-lg">Clan Profile</h2>
+                </div>
+                <div class="p-6">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="relative mb-6">
+                            <div class="absolute inset-0 bg-theme-500 rounded-full animate-pulse opacity-70 blur-md"></div>
+                            <img id="clan-icon" src="" alt="Clan Icon" class="w-32 h-32 rounded-full shadow-lg border-4 border-white object-cover relative z-10">
+                        </div>
+                        <h2 id="clan-name" class="text-2xl font-bold text-white mb-3">🏰 Clan: </h2>
+                        <p id="clan-desc" class="text-gray-300 mb-4 italic">gg/KOR1</p>
+                        <p id="clan-status" class="text-theme-100 font-medium bg-theme-600/50 py-2 px-4 rounded-full border border-theme-500">📢 Join a clan: </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard Section -->
+            <div class="glass-effect rounded-2xl shadow-elevated lg:col-span-2 border border-theme-400/20 overflow-hidden">
+                <div class="bg-theme-600 py-4 px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center gap-4">
+                        <h2 class="text-white font-bold text-lg">Member Rankings</h2>
+                        <span class="text-white/80 text-sm">Battle: <span id="battle-id" class="font-semibold">Current</span></span>
+                    </div>
+
+                    <!-- Search Box -->
+                    <div class="relative w-full md:w-auto">
+                        <input 
+                            type="text" 
+                            id="search-input" 
+                            placeholder="Search members..." 
+                            class="bg-theme-700 border border-theme-500/50 rounded-full py-2 px-4 pl-10 text-white placeholder-theme-300 focus:outline-none focus:ring-2 focus:ring-theme-400 w-full md:w-64"
+                        >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-2.5 text-theme-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead class="bg-theme-700/70 border-b border-theme-500">
+                            <tr>
+                                <th class="py-4 px-6 text-left text-theme-100 font-semibold">Rank</th>
+                                <th class="py-4 px-6 text-left text-theme-100 font-semibold">Member</th>
+                                <th class="py-4 px-6 text-right text-theme-100 font-semibold">Points</th>
+                            </tr>
+                        </thead>
+                        
+                        <tbody id="leaderboard-body">
+                            <!-- Content will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- No Results Message -->
+                <div id="no-results" class="hidden py-8 text-center text-theme-300">
+                    <p>No members found matching your search.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="mt-12 text-center text-theme-300 text-sm">
+            <p>© PS99 Clan Battle Leaderboard • Updated in real-time</p>
+        </div>
+    </div>
 
     <script>
-        async function fetchClanPoints(clanId) {
-            try {
-                // Fetch points first
-                const pointsResponse = await fetch(`https://api.example.com/clan/${clanId}/points`);
-                if (!pointsResponse.ok) throw new Error('Failed to fetch points');
+        // Global variables to store member data
+        let allMembers = [];
+        let currentMembers = [];
+        let usernameMap = {};
 
-                const pointsData = await pointsResponse.json();
-                displayPoints(pointsData); // Display points immediately
-
-                // Now, fetch display names and avatars separately
-                const userIds = pointsData.map(member => member.userId); // Collect all userIds
-
-                try {
-                    const displayNamesData = await getUsernames(userIds);
-                    if (displayNamesData.ok) {
-                        updateUsernames(displayNamesData.ok, pointsData);
-                    } else {
-                        console.error(displayNamesData.error);
-                        useDefaultUsernames(pointsData);
-                    }
-                } catch (e) {
-                    console.error("Failed to fetch display names:", e);
-                    useDefaultUsernames(pointsData);
-                }
-
-            } catch (e) {
-                console.error("Failed to fetch points:", e);
-                // Handle failure to fetch points (optional)
-            }
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
         }
 
-        async function getUsernames(userIds) {
-            const url = "https://users.roproxy.com/v1/users";
-            const body = {
-                userIds: userIds,
-                excludeBannedUsers: true
-            };
+        const clanName = getQueryParam('clan');
+        const battleID = getQueryParam('battle') || 'PixelChickBattle'; 
 
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(body)
+        // Set battle ID in UI
+        document.getElementById('battle-id').textContent = battleID;
+
+        // Search functionality
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('input', performSearch);
+
+        function performSearch() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            
+            if (searchTerm === '') {
+                // Show all members if search is empty
+                currentMembers = [...allMembers];
+                document.getElementById('no-results').classList.add('hidden');
+            } else {
+                // Filter members based on search term
+                currentMembers = allMembers.filter(member => {
+                    const username = usernameMap[member.UserID] || '';
+                    return username.toLowerCase().includes(searchTerm);
                 });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    return { error: `HTTP error: ${response.status} - ${errorText}` };
+                
+                // Show "no results" message if needed
+                if (currentMembers.length === 0) {
+                    document.getElementById('no-results').classList.remove('hidden');
+                } else {
+                    document.getElementById('no-results').classList.add('hidden');
                 }
-
-                const data = await response.json();
-                return { ok: data.data };
-
-            } catch (e) {
-                console.error("Error fetching display names:", e);
-                return { error: 'Failed to fetch display names' };
+            }
+            
+            // Update the UI with filtered members
+            renderLeaderboard();
+            
+            // Highlight search term in usernames
+            if (searchTerm !== '') {
+                highlightSearchTerm(searchTerm);
             }
         }
-
-        function displayPoints(pointsData) {
-            const clanContainer = document.getElementById('clan-container');
-            clanContainer.innerHTML = ""; // Clear previous content
-
-            pointsData.forEach(member => {
-                // Display points immediately
-                const userRow = `
-                    <div class="user-row">
-                        <span>User ID: ${member.userId}</span>
-                        <span>Points: ${member.points}</span>
-                    </div>
-                `;
-                clanContainer.innerHTML += userRow;
+        
+        function highlightSearchTerm(term) {
+            const usernameCells = document.querySelectorAll('[id^="name-"]');
+            
+            usernameCells.forEach(cell => {
+                const originalText = cell.textContent;
+                const lowerText = originalText.toLowerCase();
+                const index = lowerText.indexOf(term);
+                
+                if (index >= 0) {
+                    const before = originalText.substring(0, index);
+                    const match = originalText.substring(index, index + term.length);
+                    const after = originalText.substring(index + term.length);
+                    
+                    cell.innerHTML = `${before}<span class="search-highlight">${match}</span>${after}`;
+                }
             });
         }
 
-        function useDefaultUsernames(pointsData) {
-            const clanContainer = document.getElementById('clan-container');
+        if (clanName) {
+            fetch(`https://biggamesapi.io/api/clan/${clanName}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('API Data:', data);
+                    
+                    const clanData = data.data;
+                    const clanNameText = clanData.Name || 'Unknown Clan';
+                    const clanDesc = clanData.Desc || 'No description available';
+                    const clanStatus = clanData.Status || 'No status';
 
-            pointsData.forEach(member => {
-                // Display default usernames if display name fetch fails
-                const userRow = `
-                    <div class="user-row">
-                        <span>User ID: ${member.userId}</span>
-                        <span>Display Name: Default</span>
-                        <span>Points: ${member.points}</span>
-                    </div>
+                    let clanIconUrl = clanData.Icon;
+                    if (clanIconUrl && clanIconUrl.includes('rbxassetid://')) {
+                        clanIconUrl = clanIconUrl.replace('rbxassetid://', 'https://biggamesapi.io/image/');
+                    } else {
+                        clanIconUrl = 'https://via.placeholder.com/80';
+                    }
+
+                    document.getElementById('clan-name').textContent = `🏰 Clan: ${clanNameText}`;
+                    document.getElementById('clan-desc').textContent = ` ${clanDesc}`;
+                    document.getElementById('clan-status').innerHTML = `📢 ${clanStatus}`;
+                    document.getElementById('clan-icon').src = clanIconUrl;
+
+                    document.title = `PS99 | Clan Battle - ${clanNameText}`;
+                    document.getElementById('page-title').textContent = `${clanNameText}`;
+
+                    const battles = clanData.Battles;
+                    const battleData = battles[battleID];
+
+                    if (battleData && battleData.PointContributions) {
+                        // Store all members and sort by points
+                        allMembers = [...battleData.PointContributions].sort((a, b) => b.Points - a.Points);
+                        currentMembers = [...allMembers]; // Initialize current members with all members
+                        
+                        const userIds = allMembers.map(member => member.UserID);
+                        
+                    (async () => {
+                        try {
+                            usernameMap = await fetchUsernamesFromRoblox(userIds);
+                            renderLeaderboard();
+
+                            const avatarResult = await fetchAvatars(userIds);
+                            if (avatarResult.ok) {
+                                updateAvatars(avatarResult.ok);
+                            }
+                        } catch (error) {
+                            console.warn('Error fetching user data:', error);
+                            renderLeaderboard(); 
+                        }
+                    })();
+
+                    } else {
+                        document.getElementById('error-message').classList.remove('hidden');
+                        document.getElementById('error-message').textContent = 'No data available for this battle.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching clan data:', error);
+                    document.getElementById('error-message').classList.remove('hidden');
+                    document.getElementById('error-message').textContent = `Error fetching clan data: ${error.message}`;
+                });
+        } else {
+            document.getElementById('error-message').classList.remove('hidden');
+            document.getElementById('error-message').textContent = 'No clan name provided in the URL.';
+        }
+        
+        async function fetchUsernamesFromRoblox(userIds) {
+            if (!userIds || userIds.length === 0) {
+                return {};
+            }
+
+            const usernameMap = {};
+
+            for (const userId of userIds) {
+                try {
+                    const response = await fetch(`https://users.roproxy.com/v1/users/${userId}`);
+
+                    if (!response.ok) {
+                        console.warn(`Failed to fetch user ${userId}: ${response.status}`);
+                        continue;
+                    }
+
+                    const data = await response.json();
+
+                    usernameMap[userId] = data.name || `User ID: ${userId}`;
+                } catch (e) {
+                    console.error(`Error fetching username for ${userId}:`, e);
+                }
+            }
+
+            return usernameMap;
+        }
+       
+        function renderLeaderboard() {
+            let leaderboardHtml = '';
+            
+            currentMembers.forEach((member, index) => {
+                const userId = member.UserID;
+                const username = usernameMap[userId] || `User ID: ${userId}`;
+                const originalIndex = allMembers.findIndex(m => m.UserID === userId);
+                
+                // Apply special styling for top 3 ranks in the original leaderboard
+                let rowClass = 'border-b border-theme-400/30 hover:bg-theme-700/50 transition-colors';
+                let rankBadge;
+                
+                if (originalIndex === 0) {
+                    rowClass = 'border-b border-theme-400/30 bg-yellow-600/20 hover:bg-yellow-600/30 transition-colors';
+                    rankBadge = `<div class="ranking-badge bg-yellow-500 text-white">1</div>`;
+                } else if (originalIndex === 1) {
+                    rowClass = 'border-b border-theme-400/30 bg-gray-400/20 hover:bg-gray-400/30 transition-colors';
+                    rankBadge = `<div class="ranking-badge bg-gray-400 text-gray-900">2</div>`;
+                } else if (originalIndex === 2) {
+                    rowClass = 'border-b border-theme-400/30 bg-amber-700/20 hover:bg-amber-700/30 transition-colors';
+                    rankBadge = `<div class="ranking-badge bg-amber-700 text-white">3</div>`;
+                } else {
+                    rankBadge = `<div class="text-theme-200 font-medium pl-2">${originalIndex + 1}</div>`;
+                }
+                
+                leaderboardHtml += `
+                    <tr id="user-row-${userId}" class="${rowClass}">
+                        <td class="py-4 px-6 text-left">${rankBadge}</td>
+                        <td class="py-4 px-6">
+                            <div class="flex items-center">
+                                <img src="https://via.placeholder.com/40" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-theme-400/50 mr-4" id="avatar-${userId}">
+                                <span class="font-semibold text-white" id="name-${userId}">${username}</span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 text-right font-bold text-theme-200">${member.Points.toLocaleString()}</td>
+                    </tr>
                 `;
-                clanContainer.innerHTML += userRow;
+            });
+
+            document.getElementById('leaderboard-body').innerHTML = leaderboardHtml;
+        }
+        
+        function updateAvatars(avatars) {
+            if (!avatars || !Array.isArray(avatars)) {
+                return;
+            }
+            
+            avatars.forEach(avatar => {
+                const imgElement = document.getElementById(`avatar-${avatar.targetId}`);
+                if (imgElement && avatar.imageUrl) {
+                    imgElement.src = avatar.imageUrl;
+                }
             });
         }
 
-        function updateUsernames(usernamesData, pointsData) {
-            const clanContainer = document.getElementById('clan-container');
-
-            usernamesData.forEach((user, index) => {
-                const pointsInfo = pointsData[index];
-
-                const userRow = `
-                    <div class="user-row">
-                        <span>Display Name: ${user.displayName}</span>
-                        <span>Points: ${pointsInfo.points}</span>
-                    </div>
-                `;
-                clanContainer.innerHTML += userRow;
-            });
+        async function fetchAvatars(userIds) {
+            if (!userIds || userIds.length === 0) {
+                return { ok: [] };
+            }
+            
+            try {
+                const proxyUrl = `https://thumbnails.roproxy.com/v1/users/avatar-headshot?userIds=${userIds.join(',')}&size=75x75&format=Png&isCircular=true`;
+                const proxyResponse = await fetch(proxyUrl, { method: 'GET' });
+                
+                if (proxyResponse.ok) {
+                    const data = await proxyResponse.json();
+                    return { ok: data.data };
+                }
+                
+                const directUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userIds.join(',')}&size=48x48&format=Png&isCircular=false`;
+                const directResponse = await fetch(directUrl, { method: 'GET' });
+                
+                if (directResponse.ok) {
+                    const data = await directResponse.json();
+                    return { ok: data.data };
+                }
+                
+                return { error: 'Could not fetch avatars' };
+            } catch (e) {
+                console.error("Error fetching avatars:", e);
+                return { error: e.message };
+            }
         }
-
-        // Call the function with the appropriate clan ID
-        fetchClanPoints('your-clan-id-here');
     </script>
 </body>
 </html>
