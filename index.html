@@ -11,6 +11,14 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400;500&display=swap');
 
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Poppins', sans-serif;
+        }
+
         /* Reduce padding for the "Name" header */
         th:nth-child(2) {
             padding-left: 8px;
@@ -26,13 +34,46 @@
         td {
             padding: 8px;
         }
+
+        /* Loading spinner */
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #3b82f6;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Battle selector dropdown styling */
+        .battle-selector {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            background-color: white;
+            color: #1f2937;
+            font-weight: 500;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+        }
+
+        .battle-selector:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
     </style>
 </head>
-<body class="font-roboto bg-gradient-to-br from-gray-200 to-gray-100 text-gray-800">
+<body class="bg-gradient-to-br from-gray-200 to-gray-100 text-gray-800">
 
     <header class="bg-gray-800 text-white px-10 py-5 flex justify-between items-center shadow-lg">
         <div class="logo">
-            <h1 class="text-2xl font-poppins font-bold">MEE69 - FR3D</h1>
+            <h1 class="text-2xl font-bold">MEE69 - FR3D</h1>
         </div>
         <nav>
             <ul class="flex gap-5">
@@ -44,11 +85,20 @@
     <main>
         <div class="container max-w-3xl mx-auto mt-10 p-5 bg-white/30 rounded-xl shadow-lg backdrop-blur-sm border border-gray-300">
             <div class="flex flex-col items-center text-center">
-                <h2 class="text-2xl font-poppins font-semibold text-gray-800">CardBattle!</h2>
+                <h2 class="text-2xl font-semibold text-gray-800">CardBattle!</h2>
                 <p id="battleStart"></p>
                 <p id="battleFinish"></p>
                 <button class="reward-button bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md mt-4" onclick="openModal()">Placement Rewards</button>
-        
+                
+                <!-- Battle selector -->
+                <div class="my-4">
+                    <select id="battleSelector" class="battle-selector">
+                        <option value="PixelChickBattle">Pixel Chick Battle</option>
+                        <option value="CardBattle">Card Battle</option>
+                        <!-- Add more battle options as needed -->
+                    </select>
+                </div>
+
                 <div class="tabs flex items-center gap-4 flex-wrap mt-6">
                     <button class="tab-button bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md active" onclick="showTab('clans')">Clans</button>
                     <input type="text" id="searchInput" maxlength="4" class="px-4 py-3 border border-gray-300 rounded-lg shadow-inner focus:border-blue-600 focus:outline-none" placeholder="Search clan">
@@ -56,6 +106,13 @@
                 </div>
 
                 <div class="error-message text-red-500 mt-2" id="errorMessage"></div>
+                
+                <!-- Loading indicator -->
+                <div id="loadingIndicator" class="flex justify-center items-center my-8">
+                    <div class="loading-spinner"></div>
+                    <span class="ml-3 text-gray-600">Loading clan data...</span>
+                </div>
+
                 <table class="w-full border-collapse mt-5">
                     <thead>
                         <tr class="bg-blue-600 text-white font-semibold">
@@ -73,6 +130,11 @@
                 <div id="players" class="tab-content hidden">
                     <!-- Player data table can go here -->
                 </div>
+                
+                <!-- Load more button -->
+                <button id="loadMoreButton" class="mt-6 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg shadow hidden">
+                    Load More Clans
+                </button>
             </div>
         </div>
     </main>
@@ -80,7 +142,7 @@
     <div id="rewardsModal" class="modal hidden fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center">
         <div class="modal-content bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto">
             <span class="close text-gray-800 float-right text-2xl cursor-pointer hover:text-red-600" onclick="closeModal()">&times;</span>
-            <h3 class="text-3xl font-poppins font-bold text-blue-600 mb-6">Placement Rewards</h3>
+            <h3 class="text-3xl font-bold text-blue-600 mb-6">Placement Rewards</h3>
             <ul class="list-disc list-inside space-y-4 pl-5">
                 <li class="text-lg">Clan Gift - Top 500</li>
                 <li class="text-lg">Reversed Booth - Top 50</li>
@@ -93,152 +155,316 @@
     </div>
 
     <script>
-        var apiUrl = 'https://biggamesapi.io/api/clans?page=1&pageSize=100&sort=Points&sortOrder=desc';
-        var allClans = [];
-        var searchPage = 1;
-
-        // Fetch clan data every 5 minutes
-        function fetchClanData() {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', apiUrl, true);
-
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    var response = JSON.parse(xhr.responseText);
-                    if (response && response.status === 'ok' && Array.isArray(response.data)) {
-                        allClans = response.data;
-                        displayClans(allClans);  // Display updated clans
-                    } else {
-                        console.error('Unexpected API response structure');
+        // Global variables
+        let allClans = [];
+        let clanDetailsCache = {}; // Cache for clan details to avoid redundant API calls
+        let currentBattle = 'PixelChickBattle'; // Default battle
+        let loadingClans = false;
+        let initialClansList = []; // Store initial list of clans from /api/clans endpoint
+        let currentPage = 1;
+        const clansPerPage = 25;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up the battle selector event listener
+            const battleSelector = document.getElementById('battleSelector');
+            battleSelector.addEventListener('change', function() {
+                currentBattle = this.value;
+                // Reset data and fetch clans for the new battle
+                allClans = [];
+                clanDetailsCache = {};
+                currentPage = 1;
+                fetchInitialClansList();
+            });
+            
+            // Initial data fetch
+            fetchInitialClansList();
+            
+            // Set up load more button
+            document.getElementById('loadMoreButton').addEventListener('click', function() {
+                loadMoreClans();
+            });
+            
+            // Display battle times
+            displayBattleTimes();
+        });
+        
+        // Function to fetch initial list of clans from the /api/clans endpoint
+        function fetchInitialClansList() {
+            showLoading(true);
+            document.getElementById('clanData').innerHTML = '';
+            document.getElementById('loadMoreButton').classList.add('hidden');
+            
+            fetch('https://biggamesapi.io/api/clans?page=1&pageSize=100&sort=Points&sortOrder=desc')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch clan list');
                     }
-                } else {
-                    console.error('API request failed');
-                }
-            };
-
-            xhr.send();
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.status === 'ok' && Array.isArray(data.data)) {
+                        initialClansList = data.data;
+                        fetchClanDetailsInBatches();
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching clan list:', error);
+                    document.getElementById('errorMessage').innerText = 'Failed to load clan data. Please try again later.';
+                    showLoading(false);
+                });
         }
-
-        // Automatically refresh clan data every 5 minutes
-        setInterval(fetchClanData, 300000); // 300000 milliseconds = 5 minutes
-
-        // Call it once on page load
-        fetchClanData();
-
+        
+        // Function to fetch clan details in batches to prevent rate limiting
+        function fetchClanDetailsInBatches() {
+            if (loadingClans) return;
+            
+            loadingClans = true;
+            showLoading(true);
+            
+            const startIndex = (currentPage - 1) * clansPerPage;
+            const endIndex = Math.min(startIndex + clansPerPage, initialClansList.length);
+            const currentBatch = initialClansList.slice(startIndex, endIndex);
+            
+            if (currentBatch.length === 0) {
+                showLoading(false);
+                loadingClans = false;
+                return;
+            }
+            
+            const batchPromises = currentBatch.map(clan => fetchClanDetail(clan.Name));
+            
+            Promise.allSettled(batchPromises)
+                .then(results => {
+                    // Filter successful results and add to allClans
+                    const validClans = results
+                        .filter(result => result.status === 'fulfilled' && result.value)
+                        .map(result => result.value);
+                    
+                    // Add new clans to the array
+                    allClans = [...allClans, ...validClans];
+                    
+                    // Sort by battle points
+                    allClans.sort((a, b) => {
+                        const pointsA = a.battlePoints || 0;
+                        const pointsB = b.battlePoints || 0;
+                        return pointsB - pointsA;
+                    });
+                    
+                    // Display clans
+                    displayClans(allClans);
+                    
+                    // Show the load more button if there are more clans to load
+                    if (endIndex < initialClansList.length) {
+                        document.getElementById('loadMoreButton').classList.remove('hidden');
+                    } else {
+                        document.getElementById('loadMoreButton').classList.add('hidden');
+                    }
+                    
+                    currentPage++;
+                    loadingClans = false;
+                    showLoading(false);
+                })
+                .catch(error => {
+                    console.error('Error fetching clan details:', error);
+                    loadingClans = false;
+                    showLoading(false);
+                });
+        }
+        
+        // Function to load more clans
+        function loadMoreClans() {
+            if (!loadingClans) {
+                fetchClanDetailsInBatches();
+            }
+        }
+        
+        // Function to fetch details for a single clan
+        async function fetchClanDetail(clanName) {
+            // Check cache first
+            if (clanDetailsCache[clanName]) {
+                return clanDetailsCache[clanName];
+            }
+            
+            try {
+                const response = await fetch(`https://biggamesapi.io/api/clan/${clanName}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch clan ${clanName}`);
+                }
+                
+                const data = await response.json();
+                if (data && data.status === 'ok' && data.data) {
+                    const clanData = data.data;
+                    const battles = clanData.Battles || {};
+                    const battleData = battles[currentBattle] || {};
+                    const battlePoints = battleData.Points || 0;
+                    
+                    // Create a clan object with the necessary information
+                    const clan = {
+                        Name: clanData.Name,
+                        Icon: clanData.Icon,
+                        Members: clanData.Members || 0,
+                        battlePoints: battlePoints,
+                        originalPoints: clanData.Points || 0
+                    };
+                    
+                    // Store in cache
+                    clanDetailsCache[clanName] = clan;
+                    return clan;
+                }
+            } catch (error) {
+                console.warn(`Error fetching clan ${clanName}:`, error);
+                return null;
+            }
+            
+            return null;
+        }
+        
+        // Function to search for a specific clan
         function searchClan() {
-            var clanName = document.getElementById('searchInput').value.trim();
-
+            const clanName = document.getElementById('searchInput').value.trim();
+            
             if (clanName.length === 0) {
                 displayClans(allClans); // If input is empty, show all clans
                 document.getElementById('errorMessage').innerText = '';
                 return;
             }
-
+            
             if (clanName.length < 1 || clanName.length > 4) {
                 document.getElementById('errorMessage').innerText = 'Clan name must be between 1 and 4 characters.';
                 return;
             }
-
-            searchPage = 1;
+            
             document.getElementById('errorMessage').innerText = '';
-
-            function fetchAndSearch() {
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', `https://biggamesapi.io/api/clans?page=${searchPage}&pageSize=1000&sort=Points&sortOrder=desc`, true);
-
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        var response = JSON.parse(xhr.responseText);
-                        if (response && response.status === 'ok' && Array.isArray(response.data)) {
-                            var clans = response.data;
-                            var found = false;
-
-                            for (var i = 0; i < clans.length; i++) {
-                                if (clans[i].Name.toLowerCase() === clanName.toLowerCase()) {
-                                    var rank = (searchPage - 1) * 1000 + i + 1;
-                                    displayClans([clans[i]], rank);
-                                    document.getElementById('errorMessage').innerText = '';
-                                    found = true;
-                                    break;
-                                }
-                            }
-
-                            if (!found) {
-                                if (clans.length === 0) {
-                                    document.getElementById('errorMessage').innerText = 'Clan does not exist.';
-                                } else {
-                                    searchPage++;
-                                    fetchAndSearch();
-                                }
-                            }
-                        } else {
-                            console.error('Unexpected API response structure');
-                        }
+            showLoading(true);
+            
+            fetchClanDetail(clanName)
+                .then(clanData => {
+                    if (clanData) {
+                        // Find the rank of this clan based on battle points
+                        const cloneAllClans = [...allClans];
+                        cloneAllClans.push(clanData);
+                        cloneAllClans.sort((a, b) => b.battlePoints - a.battlePoints);
+                        const rank = cloneAllClans.findIndex(clan => clan.Name === clanName) + 1;
+                        
+                        displayClans([clanData], rank);
                     } else {
-                        console.error('API request failed');
+                        document.getElementById('errorMessage').innerText = 'Clan not found or has no data for the selected battle.';
                     }
-                };
-
-                xhr.send();
-            }
-
-            fetchAndSearch();
+                    showLoading(false);
+                })
+                .catch(error => {
+                    console.error('Error searching for clan:', error);
+                    document.getElementById('errorMessage').innerText = 'Error searching for clan. Please try again.';
+                    showLoading(false);
+                });
         }
-
+        
+        // Function to display clans in the table
         function displayClans(clans, rankStart = 1) {
-    var clanData = document.getElementById('clanData');
-    clanData.innerHTML = '';
-    
-    clans.forEach(function(clan, index) {
-        var rank = rankStart + index;
-        var medalImage = '';
-
-        // Determine the medal image based on the rank
-        if (rank === 1) {
-            medalImage = '<img src="https://db.biggames.io/_next/image?url=%2Ficon_medal_gold.png&w=32&q=75" alt="Gold Medal" class="w-6 inline-block mr-2">';
-        } else if (rank >= 2 && rank <= 10) {
-            medalImage = '<img src="https://db.biggames.io/_next/image?url=%2Ficon_medal_emerald_old.png&w=32&q=75" alt="Silver Medal" class="w-6 inline-block mr-2">';
-        } else if (rank >= 11 && rank <= 50) {
-            medalImage = '<img src="https://db.biggames.io/_next/image?url=%2Ficon_medal_bronze.png&w=32&q=75" alt="Bronze Medal" class="w-6 inline-block mr-2">';
+            const clanData = document.getElementById('clanData');
+            
+            if (rankStart === 1) {
+                clanData.innerHTML = ''; // Clear only if showing from the beginning
+            }
+            
+            clans.forEach(function(clan, index) {
+                const rank = rankStart + index;
+                let medalImage = '';
+                
+                // Determine the medal image based on the rank
+                if (rank === 1) {
+                    medalImage = '<img src="https://db.biggames.io/_next/image?url=%2Ficon_medal_gold.png&w=32&q=75" alt="Gold Medal" class="w-6 inline-block mr-2">';
+                } else if (rank >= 2 && rank <= 10) {
+                    medalImage = '<img src="https://db.biggames.io/_next/image?url=%2Ficon_medal_emerald_old.png&w=32&q=75" alt="Silver Medal" class="w-6 inline-block mr-2">';
+                } else if (rank >= 11 && rank <= 50) {
+                    medalImage = '<img src="https://db.biggames.io/_next/image?url=%2Ficon_medal_bronze.png&w=32&q=75" alt="Bronze Medal" class="w-6 inline-block mr-2">';
+                }
+                
+                // Process icon URL
+                let iconUrl = clan.Icon;
+                if (iconUrl && iconUrl.includes('rbxassetid://')) {
+                    iconUrl = iconUrl.replace('rbxassetid://', 'https://biggamesapi.io/image/');
+                } else {
+                    iconUrl = 'https://via.placeholder.com/40';
+                }
+                
+                // Create the table row with the medal
+                const row = document.createElement('tr');
+                row.classList.add('border-b', 'hover:bg-blue-50');
+                row.innerHTML = `
+                    <td class="px-4 py-2">${medalImage}${rank}</td>
+                    <td class="px-4 py-2">
+                        <div class="flex items-center">
+                            <a href="clan-info/?clan=${encodeURIComponent(clan.Name)}&battle=${encodeURIComponent(currentBattle)}">
+                                <img src="${iconUrl}" class="w-12 h-12 rounded-full inline-block mr-3" alt="Icon">
+                            </a>
+                            <span class="font-semibold clan-name">${clan.Name}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-2">${clan.battlePoints.toLocaleString()}</td>
+                    <td class="px-4 py-2">${(clan.Members + 1).toLocaleString()}</td>
+                `;
+                clanData.appendChild(row);
+            });
         }
-
-        // Create the table row with the medal
-        var row = document.createElement('tr');
-        row.classList.add('border-b', 'hover:bg-blue-50');
-        row.innerHTML = `
-            <td class="px-4 py-2">${medalImage}${rank}</td>
-            <td class="px-4 py-2">
-                <div class="flex items-center">
-                    <a href="clan-info/?clan=${encodeURIComponent(clan.Name)}">
-                        <img src="${clan.Icon.replace('rbxassetid://', 'https://biggamesapi.io/image/')}" class="w-12 h-12 rounded-full inline-block mr-3" alt="Icon">
-                    </a>
-                    <span class="font-semibold clan-name">${clan.Name}</span>
-                </div>
-            </td>
-            <td class="px-4 py-2">${clan.Points.toLocaleString()}</td>
-            <td class="px-4 py-2">${clan.Members + 1}</td>
-        `;
-        clanData.appendChild(row);
-    });
-}
-
-
-
+        
+        // Function to show/hide loading indicator
+        function showLoading(show) {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            if (show) {
+                loadingIndicator.classList.remove('hidden');
+            } else {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+        
+        // Search input event listener
         document.getElementById('searchInput').addEventListener('input', function() {
             if (this.value.trim() === '') {
                 displayClans(allClans);
                 document.getElementById('errorMessage').innerText = '';
             }
         });
-
+        
+        // Modal functions
         function openModal() {
             document.getElementById('rewardsModal').classList.remove('hidden');
         }
-
+        
         function closeModal() {
             document.getElementById('rewardsModal').classList.add('hidden');
         }
+        
+        // Function to display battle times
+        function displayBattleTimes() {
+            // Define the battle start and finish times in UTC
+            const battleStartTimeUTC = new Date(Date.UTC(2024, 8, 21, 16, 0)); // September is 8 (0-indexed)
+            const battleFinishTimeUTC = new Date(Date.UTC(2024, 9, 5, 15, 0)); // October is 9
+            
+            // Convert to local timezone with specific format options
+            const options = {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true // Use 12-hour time format with AM/PM
+            };
+            
+            const battleStartTimeLocal = battleStartTimeUTC.toLocaleString(undefined, options);
+            const battleFinishTimeLocal = battleFinishTimeUTC.toLocaleString(undefined, options);
+            
+            // Display battle start and finish times in local timezone
+            const battleStartElement = document.getElementById('battleStart');
+            const battleFinishElement = document.getElementById('battleFinish');
+            
+            if (battleStartElement && battleFinishElement) {
+                battleStartElement.textContent = `Battle start: ${battleStartTimeLocal}`;
+                battleFinishElement.textContent = `Battle finish: ${battleFinishTimeLocal}`;
+            }
+        }
     </script>
-    <script src="scripts.js"></script>
 </body>
 </html>
