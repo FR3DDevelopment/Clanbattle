@@ -404,7 +404,7 @@
                         </div>
                     </td>
                     <td class="px-4 py-2">${clan.battlePoints.toLocaleString()}</td>
-                    <td class="px-4 py-2">${(clan.Members + 1).toLocaleString()}</td>
+                    <td class="px-4 py-2">${typeof clan.Members === 'object' ? Object.keys(clan.Members).length + 1 : clan.Members + 1}</td>
                 `;
                 clanData.appendChild(row);
             });
