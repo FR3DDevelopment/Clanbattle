@@ -9,30 +9,47 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
         }
         
-        h1, h2, h3 {
+        h1, h2, h3, h4 {
             font-family: 'Poppins', sans-serif;
         }
 
-        /* Reduce padding for the "Name" header */
-        th:nth-child(2) {
-            padding-left: 8px;
-            padding-right: 8px;
+        /* Glassmorphism effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
         }
 
-        /* Adjust flex layout in "Name" column to prevent extra spacing */
-        .clan-name {
-            margin-left: 0.5rem;
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
-        /* Optional: Reduce padding between table cells */
-        td {
-            padding: 8px;
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
 
         /* Loading spinner */
@@ -50,107 +67,236 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Battle selector dropdown styling */
-        .battle-selector {
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid #e5e7eb;
-            background-color: white;
-            color: #1f2937;
-            font-weight: 500;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            cursor: pointer;
+        /* Button animations */
+        .btn-hover {
+            transition: all 0.3s ease;
+            transform: translateY(0);
+        }
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(59, 130, 246, 0.25);
         }
 
-        .battle-selector:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        /* Custom checkbox for tabs */
+        .tab-checkbox {
+            position: absolute;
+            opacity: 0;
+        }
+        .tab-label {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tab-checkbox:checked + .tab-label {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .tab-checkbox:checked + .tab-label::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #3b82f6;
+            border-radius: 3px;
+        }
+
+        /* Animated modal */
+        @keyframes modalIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .modal-in {
+            animation: modalIn 0.3s ease-out forwards;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-200 to-gray-100 text-gray-800">
+<body class="min-h-screen">
 
-    <header class="bg-gray-800 text-white px-10 py-5 flex justify-between items-center shadow-lg">
-        <div class="logo">
-            <h1 class="text-2xl font-bold">MEE69 - FR3D</h1>
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xl">
+        <div class="container mx-auto px-4 py-6 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <h1 class="text-2xl font-bold">MEE69 - FR3D</h1>
+            </div>
+            <nav class="hidden md:block">
+                <ul class="flex space-x-6">
+                    <li><a href="#" class="hover:text-blue-200 transition">Home</a></li>
+                    <li><a href="#" class="hover:text-blue-200 transition">About</a></li>
+                    <li><a href="#" class="hover:text-blue-200 transition">Contact</a></li>
+                </ul>
+            </nav>
+            <button class="md:hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
         </div>
-        <nav>
-            <ul class="flex gap-5">
-                <!-- Navigation links can be added here -->
-            </ul>
-        </nav>
     </header>
 
-    <main>
-        <div class="container max-w-3xl mx-auto mt-10 p-5 bg-white/30 rounded-xl shadow-lg backdrop-blur-sm border border-gray-300">
-            <div class="flex flex-col items-center text-center">
-                <h2 class="text-2xl font-semibold text-gray-800">CardBattle!</h2>
-                <p id="battleStart"></p>
-                <p id="battleFinish"></p>
-                <button class="reward-button bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md mt-4" onclick="openModal()">Placement Rewards</button>
-                
-                <!-- Battle selector -->
-                <div class="my-4">
-                    <select id="battleSelector" class="battle-selector">
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Battle Info Card -->
+        <div class="glass-card rounded-2xl p-6 mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-3xl font-bold gradient-text mb-2">CardBattle!</h2>
+                    <div class="flex flex-col space-y-1 text-gray-700">
+                        <p id="battleStart" class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="font-medium">Battle start:</span> <span class="ml-1" id="startTime"></span>
+                        </p>
+                        <p id="battleFinish" class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="font-medium">Battle finish:</span> <span class="ml-1" id="finishTime"></span>
+                        </p>
+                    </div>
+                </div>
+                <button class="reward-button bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-3 rounded-lg shadow-md mt-4 md:mt-0 btn-hover flex items-center" onclick="openModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m8-8v7m-16-7v7m8-12a4 4 0 00-4 4v1a2 2 0 002 2h4a2 2 0 002-2v-1a4 4 0 00-4-4z" />
+                    </svg>
+                    Placement Rewards
+                </button>
+            </div>
+        </div>
+
+        <!-- Battle Selector and Search -->
+        <div class="glass-card rounded-2xl p-6 mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
+                <div class="flex-1">
+                    <label for="battleSelector" class="block text-sm font-medium text-gray-700 mb-1">Select Battle:</label>
+                    <select id="battleSelector" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white">
                         <option value="PixelChickBattle">Pixel Chick Battle</option>
                         <option value="AthenaBattle">Athena Battle!</option>
-                        <!-- Add more battle options as needed -->
                     </select>
                 </div>
-
-                <div class="tabs flex items-center gap-4 flex-wrap mt-6">
-                    <button class="tab-button bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md active" onclick="showTab('clans')">Clans</button>
-                    <input type="text" id="searchInput" maxlength="4" class="px-4 py-3 border border-gray-300 rounded-lg shadow-inner focus:border-blue-600 focus:outline-none" placeholder="Search clan">
-                    <button class="search-button bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md" onclick="searchClan()">Search</button>
-                </div>
-
-                <div class="error-message text-red-500 mt-2" id="errorMessage"></div>
                 
-                <!-- Loading indicator -->
-                <div id="loadingIndicator" class="flex justify-center items-center my-8">
-                    <div class="loading-spinner"></div>
-                    <span class="ml-3 text-gray-600">Loading clan data...</span>
+                <div class="flex-1">
+                    <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Search Clan:</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="searchInput" maxlength="4" class="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Enter clan name">
+                        <button class="search-button bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-3 rounded-lg shadow-md btn-hover" onclick="searchClan()">
+                            Search
+                        </button>
+                    </div>
                 </div>
+            </div>
+            
+            <div class="error-message text-red-500 mt-2 text-sm" id="errorMessage"></div>
+        </div>
 
-                <table class="w-full border-collapse mt-5">
-                    <thead>
-                        <tr class="bg-blue-600 text-white font-semibold">
-                            <th class="px-4 py-2 w-1/6">Ranking</th>
-                            <th class="px-4 py-2 w-2/6 text-left">Name</th>
-                            <th class="px-4 py-2 w-1/6">Points</th>
-                            <th class="px-4 py-2 w-1/6">Members</th>
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="flex justify-center items-center my-12 py-8">
+            <div class="text-center">
+                <div class="loading-spinner mx-auto"></div>
+                <p class="mt-4 text-gray-600">Loading clan data...</p>
+            </div>
+        </div>
+
+        <!-- Clan Data Table -->
+        <div class="glass-card rounded-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                        <tr>
+                            <th class="px-6 py-4 text-left font-semibold w-24">Rank</th>
+                            <th class="px-6 py-4 text-left font-semibold">Clan</th>
+                            <th class="px-6 py-4 text-right font-semibold w-32">Points</th>
+                            <th class="px-6 py-4 text-right font-semibold w-32">Members</th>
                         </tr>
                     </thead>
-                    <tbody id="clanData">
+                    <tbody id="clanData" class="divide-y divide-gray-200">
                         <!-- Clan data will be populated here -->
                     </tbody>
                 </table>
-
-                <div id="players" class="tab-content hidden">
-                    <!-- Player data table can go here -->
-                </div>
-                
-                <!-- Load more button -->
-                <button id="loadMoreButton" class="mt-6 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg shadow hidden">
+            </div>
+            
+            <!-- Load More Button -->
+            <div class="p-4 flex justify-center">
+                <button id="loadMoreButton" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-3 px-6 rounded-lg shadow transition hidden btn-hover" onclick="loadMoreClans()">
                     Load More Clans
                 </button>
             </div>
         </div>
     </main>
 
-    <div id="rewardsModal" class="modal hidden fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center">
-        <div class="modal-content bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto">
-            <span class="close text-gray-800 float-right text-2xl cursor-pointer hover:text-red-600" onclick="closeModal()">&times;</span>
-            <h3 class="text-3xl font-bold text-blue-600 mb-6">Placement Rewards</h3>
-            <ul class="list-disc list-inside space-y-4 pl-5">
-                <li class="text-lg">Clan Gift - Top 500</li>
-                <li class="text-lg">Reversed Booth - Top 50</li>
-                <li class="text-lg">Reversed Hoverboard - Top 10</li>
-                <li class="text-lg">Huge Reversed Cat - Top 4 to 10</li>
-                <li class="text-lg">Golden Huge Reversed Cat - Top 2-3</li>
-                <li class="text-lg">Rainbow Huge Reversed Cat - Top 1</li>
+    <!-- Rewards Modal -->
+    <div id="rewardsModal" class="modal hidden fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center p-4">
+        <div class="modal-content bg-white rounded-xl shadow-2xl p-8 max-w-md w-full modal-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold gradient-text">Placement Rewards</h3>
+                <button class="close text-gray-500 hover:text-gray-700 transition" onclick="closeModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <ul class="space-y-4">
+                <li class="flex items-start">
+                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center mr-3 mt-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <span class="text-gray-700">Clan Gift - <span class="font-semibold">Top 500</span></span>
+                </li>
+                <li class="flex items-start">
+                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center mr-3 mt-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <span class="text-gray-700">Reversed Booth - <span class="font-semibold">Top 50</span></span>
+                </li>
+                <li class="flex items-start">
+                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center mr-3 mt-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <span class="text-gray-700">Reversed Hoverboard - <span class="font-semibold">Top 10</span></span>
+                </li>
+                <li class="flex items-start">
+                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center mr-3 mt-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <span class="text-gray-700">Huge Reversed Cat - <span class="font-semibold">Top 4-10</span></span>
+                </li>
+                <li class="flex items-start">
+                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center mr-3 mt-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <span class="text-gray-700">Golden Huge Reversed Cat - <span class="font-semibold">Top 2-3</span></span>
+                </li>
+                <li class="flex items-start">
+                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center mr-3 mt-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <span class="text-gray-700">Rainbow Huge Reversed Cat - <span class="font-semibold">Top 1</span></span>
+                </li>
             </ul>
+            
+            <div class="mt-8 flex justify-center">
+                <button onclick="closeModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-6 rounded-lg shadow transition">
+                    Close
+                </button>
+            </div>
         </div>
     </div>
 
@@ -186,6 +332,13 @@
             
             // Display battle times
             displayBattleTimes();
+            
+            // Search input event listener for Enter key
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchClan();
+                }
+            });
         });
         
         // Function to fetch initial list of clans from the /api/clans endpoint
@@ -375,11 +528,13 @@
                 
                 // Determine the medal image based on the rank
                 if (rank === 1) {
-                    medalImage = '<img src="https://db.biggames.io/_next/image?url=%2Ficon_medal_gold.png&w=32&q=75" alt="Gold Medal" class="w-6 inline-block mr-2">';
+                    medalImage = '<div class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 mr-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg></div>';
                 } else if (rank >= 2 && rank <= 10) {
-                    medalImage = '<img src="https://db.biggames.io/_next/image?url=%2Ficon_medal_emerald_old.png&w=32&q=75" alt="Silver Medal" class="w-6 inline-block mr-2">';
+                    medalImage = '<div class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 mr-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg></div>';
                 } else if (rank >= 11 && rank <= 50) {
-                    medalImage = '<img src="https://db.biggames.io/_next/image?url=%2Ficon_medal_bronze.png&w=32&q=75" alt="Bronze Medal" class="w-6 inline-block mr-2">';
+                    medalImage = '<div class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-600 to-amber-800 mr-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg></div>';
+                } else {
+                    medalImage = `<span class="text-gray-500 font-medium">${rank}</span>`;
                 }
                 
                 // Process icon URL
@@ -392,19 +547,27 @@
                 
                 // Create the table row with the medal
                 const row = document.createElement('tr');
-                row.classList.add('border-b', 'hover:bg-blue-50');
+                row.classList.add('hover:bg-blue-50', 'transition');
                 row.innerHTML = `
-                    <td class="px-4 py-2">${medalImage}${rank}</td>
-                    <td class="px-4 py-2">
+                    <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <a href="clan-info/?clan=${encodeURIComponent(clan.Name)}&battle=${encodeURIComponent(currentBattle)}">
-                                <img src="${iconUrl}" class="w-12 h-12 rounded-full inline-block mr-3" alt="Icon">
-                            </a>
-                            <span class="font-semibold clan-name">${clan.Name}</span>
+                            ${medalImage}
                         </div>
                     </td>
-                    <td class="px-4 py-2">${clan.battlePoints.toLocaleString()}</td>
-                    <td class="px-4 py-2">${typeof clan.Members === 'object' ? Object.keys(clan.Members).length + 1 : clan.Members + 1}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <a href="clan-info/?clan=${encodeURIComponent(clan.Name)}&battle=${encodeURIComponent(currentBattle)}" class="group flex items-center">
+                                <img src="${iconUrl}" class="w-10 h-10 rounded-full mr-3 group-hover:ring-2 group-hover:ring-blue-500 transition">
+                                <span class="font-medium text-gray-900 group-hover:text-blue-600 transition">${clan.Name}</span>
+                            </a>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900">
+                        ${clan.battlePoints.toLocaleString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-gray-500">
+                        ${typeof clan.Members === 'object' ? Object.keys(clan.Members).length + 1 : clan.Members + 1}
+                    </td>
                 `;
                 clanData.appendChild(row);
             });
@@ -445,8 +608,8 @@
             
             // Convert to local timezone with specific format options
             const options = {
-                year: 'numeric',
-                month: 'numeric',
+                weekday: 'short',
+                month: 'short',
                 day: 'numeric',
                 hour: 'numeric',
                 minute: 'numeric',
@@ -457,13 +620,8 @@
             const battleFinishTimeLocal = battleFinishTimeUTC.toLocaleString(undefined, options);
             
             // Display battle start and finish times in local timezone
-            const battleStartElement = document.getElementById('battleStart');
-            const battleFinishElement = document.getElementById('battleFinish');
-            
-            if (battleStartElement && battleFinishElement) {
-                battleStartElement.textContent = `Battle start: ${battleStartTimeLocal}`;
-                battleFinishElement.textContent = `Battle finish: ${battleFinishTimeLocal}`;
-            }
+            document.getElementById('startTime').textContent = battleStartTimeLocal;
+            document.getElementById('finishTime').textContent = battleFinishTimeLocal;
         }
     </script>
 </body>
