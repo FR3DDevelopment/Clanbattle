@@ -5,34 +5,8 @@
     <link rel="icon" href="../Favicon.png" type="image/x-icon">
     <link rel="shortcut icon" href="../Favicon.png" type="image/x-icon">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clan Leaderboard</title>
+    <title>Clan Info - PS99</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        theme: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            200: '#bfdbfe',
-                            300: '#93c5fd',
-                            400: '#60a5fa',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            800: '#1e40af',
-                            900: '#1e3a8a',
-                        }
-                    },
-                    boxShadow: {
-                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                        'elevated': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400;500&display=swap');
         
@@ -57,15 +31,6 @@
             height: 26px;
             border-radius: 50%;
             font-weight: 600;
-        }
-        
-        th:nth-child(2) {
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-        
-        .clan-name {
-            margin-left: 0.5rem;
         }
         
         .loading-spinner {
@@ -101,7 +66,7 @@
 <body class="bg-gradient-to-br from-gray-200 to-gray-100 text-gray-800 min-h-screen">
     <header class="bg-gray-800 text-white px-10 py-5 flex justify-between items-center shadow-lg">
         <div class="logo">
-            <h1 class="text-2xl font-bold">MEE69 - FR3D</h1>
+            <h1 class="text-2xl font-bold">Pet Simulator 99 - Clans</h1>
         </div>
         <nav>
             <ul class="flex gap-5">
@@ -111,15 +76,15 @@
     </header>
 
     <div class="container mx-auto px-4 py-12 max-w-5xl">
-        <!-- Header with logo -->
+        <!-- Header -->
         <div class="relative mb-10">
             <div class="absolute top-0 left-0 w-24 h-24 bg-blue-500 rounded-full opacity-20 blur-2xl"></div>
             <div class="absolute top-10 right-10 w-32 h-32 bg-blue-400 rounded-full opacity-10 blur-2xl"></div>
             
             <div class="text-center relative z-10">
-                <h1 id="page-title" class="text-4xl font-bold text-gray-800 mb-4">Clan Leaderboard</h1>
+                <h1 id="page-title" class="text-4xl font-bold text-gray-800 mb-4">Clan Information</h1>
                 <div class="w-32 h-1 bg-blue-600 mx-auto rounded-full mb-6"></div>
-                <p class="text-blue-700 font-medium">Real-time clan battle statistics</p>
+                <p class="text-blue-700 font-medium">Detailed clan statistics</p>
             </div>
             
             <div id="error-message" class="mt-6 text-red-600 text-center mb-4 font-medium bg-red-50 py-3 px-4 rounded-lg shadow-md max-w-lg mx-auto hidden"></div>
@@ -144,28 +109,35 @@
                             <div class="absolute inset-0 bg-blue-500 rounded-full animate-pulse opacity-70 blur-md"></div>
                             <img id="clan-icon" src="" alt="Clan Icon" class="w-32 h-32 rounded-full shadow-lg border-4 border-white object-cover relative z-10" onerror="this.src='https://via.placeholder.com/128'">
                         </div>
-                        <h2 id="clan-name" class="text-2xl font-bold text-gray-800 mb-3">🏰 Clan: </h2>
+                        <h2 id="clan-name" class="text-2xl font-bold text-gray-800 mb-3">🏰 Clan</h2>
                         <p id="clan-desc" class="text-gray-600 mb-4 italic">Loading...</p>
                         <div class="grid grid-cols-2 gap-4 w-full mt-4">
                             <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                                <p class="text-sm text-blue-600 font-medium">Total Points</p>
+                                <p class="text-sm text-blue-600 font-medium">Points</p>
                                 <p id="clan-points" class="text-xl font-bold text-blue-800">0</p>
                             </div>
                             <div class="bg-green-50 rounded-lg p-3 border border-green-200">
                                 <p class="text-sm text-green-600 font-medium">Members</p>
                                 <p id="clan-member-count" class="text-xl font-bold text-green-800">0</p>
                             </div>
+                            <div class="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                                <p class="text-sm text-purple-600 font-medium">Level</p>
+                                <p id="clan-level" class="text-xl font-bold text-purple-800">0</p>
+                            </div>
+                            <div class="bg-amber-50 rounded-lg p-3 border border-amber-200">
+                                <p class="text-sm text-amber-600 font-medium">Created</p>
+                                <p id="clan-created" class="text-xl font-bold text-amber-800">-</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Leaderboard Section -->
+            <!-- Members Section -->
             <div class="bg-white rounded-2xl shadow-lg lg:col-span-2 border border-gray-300 overflow-hidden fade-in">
                 <div class="bg-blue-600 py-4 px-6 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div class="flex items-center gap-4">
-                        <h2 class="text-white font-bold text-lg">Member Rankings</h2>
-                        <span class="text-white/80 text-sm">Battle: <span id="battle-id" class="font-semibold">Current</span></span>
+                        <h2 class="text-white font-bold text-lg">Clan Members</h2>
                     </div>
 
                     <!-- Search Box -->
@@ -186,13 +158,13 @@
                     <table class="min-w-full">
                         <thead class="bg-gray-100 border-b border-gray-300">
                             <tr>
-                                <th class="py-4 px-6 text-left text-gray-700 font-semibold">Rank</th>
                                 <th class="py-4 px-6 text-left text-gray-700 font-semibold">Member</th>
-                                <th class="py-4 px-6 text-right text-gray-700 font-semibold">Points</th>
+                                <th class="py-4 px-6 text-right text-gray-700 font-semibold">Role</th>
+                                <th class="py-4 px-6 text-right text-gray-700 font-semibold">Joined</th>
                             </tr>
                         </thead>
                         
-                        <tbody id="leaderboard-body">
+                        <tbody id="members-body">
                             <!-- Content will be populated by JavaScript -->
                         </tbody>
                     </table>
@@ -212,32 +184,24 @@
         
         <!-- Footer -->
         <div class="mt-12 text-center text-gray-500 text-sm">
-            <p>© PS99 Clan Battle Leaderboard • Updated in real-time</p>
+            <p>© PS99 Clan Info • Data from Big Games API</p>
         </div>
     </div>
 
     <script>
-        // Global variables to store member data
+        // Global variables
         let allMembers = [];
         let currentMembers = [];
         let usernameMap = {};
         let avatarCache = {};
-        let clanLeaderUserId = null;
         
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const clanName = urlParams.get('clan');
-        const battleId = urlParams.get('battle') || 'battle1';
-        
-        // Update battle ID display
-        if (battleId) {
-            const battleNum = battleId.replace('battle', '');
-            document.getElementById('battle-id').textContent = `Battle ${battleNum}`;
-        }
         
         // Initialize page
         if (clanName) {
-            document.getElementById('page-title').textContent = `${clanName} - Clan Leaderboard`;
+            document.getElementById('page-title').textContent = `${clanName} - Clan Info`;
             loadClanData();
         } else {
             showError('No clan name provided in the URL.');
@@ -269,19 +233,21 @@
             setLoading(true);
             
             try {
-                const response = await fetch(`https://biggamesapi.io/api/clan/${battleId}`);
+                const response = await fetch(`https://ps99.biggamesapi.io/api/clan/${encodeURIComponent(clanName)}`);
                 
                 if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Clan not found');
+                    }
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
-                const data = await response.json();
+                const result = await response.json();
                 
-                if (data && data.data && data.data[clanName]) {
-                    const clanData = data.data[clanName];
-                    await processClanData(clanData);
+                if (result.status === 'ok' && result.data) {
+                    await processClanData(result.data);
                 } else {
-                    showError('No data available for this clan in the selected battle.');
+                    showError('No data available for this clan.');
                 }
             } catch (error) {
                 console.error('Error fetching clan data:', error);
@@ -293,76 +259,73 @@
         
         // Process clan data
         async function processClanData(clanData) {
-            // Update clan info
-            const clanIcon = document.getElementById('clan-icon');
+            // Update clan icon
             let iconUrl = clanData.Icon || '';
             if (iconUrl && iconUrl.includes('rbxassetid://')) {
-                iconUrl = iconUrl.replace('rbxassetid://', 'https://biggamesapi.io/image/');
+                const assetId = iconUrl.replace('rbxassetid://', '');
+                iconUrl = `https://ps99.biggamesapi.io/api/image/${assetId}`;
             } else if (!iconUrl) {
-                iconUrl = 'https://via.placeholder.com/128';
+                iconUrl = 'https://via.placeholder.com/128?text=' + encodeURIComponent(clanName);
             }
-            clanIcon.src = iconUrl;
+            document.getElementById('clan-icon').src = iconUrl;
             
+            // Update clan info
             document.getElementById('clan-name').textContent = `🏰 ${clanName}`;
+            document.getElementById('clan-desc').textContent = clanData.Desc || 'No description';
+            document.getElementById('clan-points').textContent = (clanData.Points || 0).toLocaleString();
+            document.getElementById('clan-level').textContent = clanData.GuildLevel || 0;
             
-            // Get clan leader ID (the owner of the clan)
-            clanLeaderUserId = clanData.Owner || null;
+            // Format creation date
+            if (clanData.Created) {
+                const date = new Date(clanData.Created * 1000);
+                document.getElementById('clan-created').textContent = date.toLocaleDateString();
+            }
             
             // Process members
             const members = [];
             
-            // Add clan leader with their points
-            if (clanLeaderUserId) {
+            // Add owner/leader
+            if (clanData.Owner) {
                 members.push({
-                    UserID: clanLeaderUserId,
-                    Points: clanData.Points || 0,
-                    isLeader: true
+                    UserID: clanData.Owner,
+                    PermissionLevel: 100,
+                    JoinTime: clanData.Created || 0,
+                    isOwner: true
                 });
             }
             
             // Add all other members
-            if (clanData.Members && typeof clanData.Members === 'object') {
-                Object.entries(clanData.Members).forEach(([userId, memberData]) => {
-                    // Convert userId to number for consistency
-                    const userIdNum = parseInt(userId);
-                    if (!isNaN(userIdNum) && userIdNum !== clanLeaderUserId) {
+            if (clanData.Members && Array.isArray(clanData.Members)) {
+                clanData.Members.forEach(member => {
+                    if (member.UserID !== clanData.Owner) {
                         members.push({
-                            UserID: userIdNum,
-                            Points: memberData.Points || 0,
-                            isLeader: false
+                            ...member,
+                            isOwner: false
                         });
                     }
                 });
             }
             
-            // Sort members by points (descending)
-            members.sort((a, b) => b.Points - a.Points);
-            
             allMembers = members;
             currentMembers = [...allMembers];
             
-            // Calculate total points
-            const totalPoints = members.reduce((sum, member) => sum + member.Points, 0);
-            document.getElementById('clan-points').textContent = totalPoints.toLocaleString();
             document.getElementById('clan-member-count').textContent = members.length;
             
-            // Fetch usernames for all members
+            // Fetch usernames
             const userIds = members.map(m => m.UserID);
             await fetchUsernamesFromRoblox(userIds);
             
-            // Render initial leaderboard
-            renderLeaderboard();
+            // Render members
+            renderMembers();
             
-            // Fetch avatars in background (non-blocking)
+            // Fetch avatars in background
             fetchAvatarsBatched(userIds);
         }
         
         // Fetch usernames from Roblox API
         async function fetchUsernamesFromRoblox(userIds) {
-            if (!userIds || userIds.length === 0) {
-                return;
-            }
-
+            if (!userIds || userIds.length === 0) return;
+            
             const batchSize = 50;
             
             for (let i = 0; i < userIds.length; i += batchSize) {
@@ -370,16 +333,13 @@
                 
                 await Promise.all(batch.map(async (userId) => {
                     try {
-                        // Try proxy first
                         let response = await fetch(`https://users.roproxy.com/v1/users/${userId}`);
                         
-                        // Fallback to direct API if proxy fails
                         if (!response.ok) {
                             response = await fetch(`https://users.roblox.com/v1/users/${userId}`);
                         }
                         
                         if (!response.ok) {
-                            console.warn(`Failed to fetch user ${userId}: ${response.status}`);
                             usernameMap[userId] = `User ${userId}`;
                             return;
                         }
@@ -392,82 +352,76 @@
                     }
                 }));
                 
-                // Small delay between batches
                 if (i + batchSize < userIds.length) {
                     await new Promise(resolve => setTimeout(resolve, 150));
                 }
             }
         }
         
-        // Render leaderboard
-        function renderLeaderboard() {
-            const leaderboardBody = document.getElementById('leaderboard-body');
+        // Render members table
+        function renderMembers() {
+            const membersBody = document.getElementById('members-body');
             const noResults = document.getElementById('no-results');
             
             if (currentMembers.length === 0) {
-                leaderboardBody.innerHTML = '';
+                membersBody.innerHTML = '';
                 noResults.classList.remove('hidden');
                 return;
             }
             
             noResults.classList.add('hidden');
             
-            let leaderboardHtml = '';
+            let html = '';
             
-            currentMembers.forEach((member, index) => {
+            currentMembers.forEach((member) => {
                 const userId = member.UserID;
                 const username = usernameMap[userId] || `User ${userId}`;
-                const originalIndex = allMembers.findIndex(m => m.UserID === userId);
-                const rank = originalIndex + 1;
-                
-                // Apply special styling for top 3 ranks
-                let rowClass = 'border-b border-gray-200 hover:bg-gray-50 transition-colors';
-                let rankBadge;
-                
-                if (originalIndex === 0) {
-                    rowClass = 'border-b border-gray-200 bg-yellow-50 hover:bg-yellow-100 transition-colors';
-                    rankBadge = `<div class="ranking-badge bg-yellow-500 text-white">1</div>`;
-                } else if (originalIndex === 1) {
-                    rowClass = 'border-b border-gray-200 bg-gray-100 hover:bg-gray-200 transition-colors';
-                    rankBadge = `<div class="ranking-badge bg-gray-400 text-gray-900">2</div>`;
-                } else if (originalIndex === 2) {
-                    rowClass = 'border-b border-gray-200 bg-amber-50 hover:bg-amber-100 transition-colors';
-                    rankBadge = `<div class="ranking-badge bg-amber-700 text-white">3</div>`;
-                } else {
-                    rankBadge = `<div class="text-gray-600 font-medium pl-2">${rank}</div>`;
-                }
-                
-                // Get cached avatar or use placeholder
                 const avatarUrl = avatarCache[userId] || 'https://via.placeholder.com/40';
                 
-                // Add leader badge if applicable
-                const leaderBadge = member.isLeader ? '<span class="ml-2 px-2 py-1 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full">LEADER</span>' : '';
+                // Determine role
+                let role = 'Member';
+                let roleColor = 'text-gray-600';
+                if (member.isOwner) {
+                    role = 'Owner';
+                    roleColor = 'text-yellow-600 font-bold';
+                } else if (member.PermissionLevel >= 90) {
+                    role = 'Officer';
+                    roleColor = 'text-blue-600 font-semibold';
+                }
                 
-                leaderboardHtml += `
-                    <tr id="user-row-${userId}" class="${rowClass}">
-                        <td class="py-4 px-6 text-left">${rankBadge}</td>
+                // Format join date
+                let joinDate = '-';
+                if (member.JoinTime) {
+                    const date = new Date(member.JoinTime * 1000);
+                    joinDate = date.toLocaleDateString();
+                }
+                
+                html += `
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
                         <td class="py-4 px-6">
                             <div class="flex items-center">
                                 <img src="${avatarUrl}" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-gray-300 mr-4" id="avatar-${userId}" onerror="this.src='https://via.placeholder.com/40'">
-                                <div class="flex items-center">
-                                    <span class="font-semibold text-gray-800" id="name-${userId}">${username}</span>
-                                    ${leaderBadge}
-                                </div>
+                                <span class="font-semibold text-gray-800" id="name-${userId}">${username}</span>
                             </div>
                         </td>
-                        <td class="py-4 px-6 text-right font-bold text-blue-600">${member.Points.toLocaleString()}</td>
+                        <td class="py-4 px-6 text-right ${roleColor}">
+                            ${role}
+                        </td>
+                        <td class="py-4 px-6 text-right text-gray-600">
+                            ${joinDate}
+                        </td>
                     </tr>
                 `;
             });
-
-            leaderboardBody.innerHTML = leaderboardHtml;
+            
+            membersBody.innerHTML = html;
         }
         
         // Fetch avatars in batches
         async function fetchAvatarsBatched(userIds) {
             if (!userIds || userIds.length === 0) return;
             
-            const batchSize = 50; // Roblox API supports up to 100 but we use 50 for safety
+            const batchSize = 50;
             
             for (let i = 0; i < userIds.length; i += batchSize) {
                 const batch = userIds.slice(i, i + batchSize);
@@ -475,7 +429,6 @@
                     const avatars = await fetchAvatarBatch(batch);
                     updateAvatarsInUI(avatars);
                     
-                    // Small delay between batches
                     if (i + batchSize < userIds.length) {
                         await new Promise(resolve => setTimeout(resolve, 300));
                     }
@@ -488,7 +441,6 @@
         // Fetch a batch of avatars
         async function fetchAvatarBatch(userIds) {
             try {
-                // Try proxy first
                 const proxyUrl = `https://thumbnails.roproxy.com/v1/users/avatar-headshot?userIds=${userIds.join(',')}&size=150x150&format=Png&isCircular=true`;
                 let response = await fetch(proxyUrl);
                 
@@ -497,7 +449,6 @@
                     return data.data || [];
                 }
                 
-                // Fallback to direct Roblox API
                 const directUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userIds.join(',')}&size=150x150&format=Png&isCircular=true`;
                 response = await fetch(directUrl);
                 
@@ -520,10 +471,8 @@
             avatars.forEach(avatar => {
                 if (!avatar.targetId || !avatar.imageUrl) return;
                 
-                // Store in cache
                 avatarCache[avatar.targetId] = avatar.imageUrl;
                 
-                // Update UI if element exists
                 const imgElement = document.getElementById(`avatar-${avatar.targetId}`);
                 if (imgElement) {
                     imgElement.src = avatar.imageUrl;
@@ -551,7 +500,7 @@
                     });
                 }
                 
-                renderLeaderboard();
+                renderMembers();
             }, 300);
         });
     </script>
